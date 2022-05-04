@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
-var jwtSecret []byte
+var secret []byte
 
-func JwtAuth(username string, uuid string) (t string, err error) {
+func Auth(username string, uuid string) (t string, err error) {
 	now := time.Now()
 	// default token exp time is 86400s 60 * 60 * 24
 	expSecond := 86400
@@ -27,19 +27,19 @@ func JwtAuth(username string, uuid string) (t string, err error) {
 	claims["username"] = username
 	claims["uuid"] = uuid
 	claims["exp"] = now.Add(time.Duration(expSecond) * time.Second).Unix()
-	t, err = token.SignedString(jwtSecret)
+	t, err = token.SignedString(secret)
 	if err != nil {
 		return "", errors.New("JWT Generate Failure")
 	}
 	return t, nil
 }
 
-func JwtParse(tokenstring string) (jwt.MapClaims, error) {
-	token, err := jwt.Parse(tokenstring, func(token *jwt.Token) (i interface{}, err error) {
-		return jwtSecret, nil
+func Parse(ts string) (jwt.MapClaims, error) {
+	token, err := jwt.Parse(ts, func(token *jwt.Token) (i interface{}, err error) {
+		return secret, nil
 	})
 	if err != nil || !token.Valid {
-		return nil, errors.New("Token invalid")
+		return nil, errors.New("token invalid")
 	}
 	claim := token.Claims.(jwt.MapClaims)
 	return claim, nil
